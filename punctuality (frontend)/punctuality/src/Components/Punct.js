@@ -30,8 +30,8 @@ export default class Punct extends React.Component {
         self.setState({
           rosters: json
         });
-        console.log("rosters")
-        console.log(self.state.rosters)
+        console.log("rosters");
+        console.log(self.state.rosters);
       });
     });
     fetch("http://localhost:4567/shifts/" + this.state.startDate + "/" + this.state.endDate, 
@@ -58,6 +58,27 @@ export default class Punct extends React.Component {
 
 
   render() {
+    var dayInfo = [];
+    for (var i = 0; i < this.state.rosters.length; i++) {
+      dayInfo.push({
+        date: this.state.rosters[i].date,
+        rosterStart: this.state.rosters[i].start,
+        rosterFinish: this.state.rosters[i].finish,
+        shiftStart: this.state.shifts[i].start,
+        shiftFinish: this.state.shifts[i].finish,
+      })
+    }
+    const tableRows = dayInfo.map((day) => (
+        <Table.Row>
+          <Table.Cell>{day.date}</Table.Cell>
+          <Table.Cell>{day.rosterStart}</Table.Cell>
+          <Table.Cell>{day.shiftStart}</Table.Cell>
+          <Table.Cell>{day.rosterFinish}</Table.Cell>
+          <Table.Cell>{day.shiftFinish}</Table.Cell>
+        </Table.Row>
+      )
+    );
+
     return (
       <Segment>
         <Header image="mike.png" as="h1" content="Mike Wazowski, Scare Assistant" />
@@ -71,7 +92,7 @@ export default class Punct extends React.Component {
               <Table.HeaderCell>Actual Finish</Table.HeaderCell>
             </Table.Row>
           </Table.Header>
-
+          {tableRows}
         </Table>
 
         
