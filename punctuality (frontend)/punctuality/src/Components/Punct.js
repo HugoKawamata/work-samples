@@ -1,5 +1,7 @@
 import * as React from "react";
-import { Segment, Input, Button, Header, Table } from "semantic-ui-react";
+import DatePicker from "react-date-picker";
+import * as moment from 'moment';
+import { Segment, Input, Button, Header, Table, Modal, Icon, Label } from "semantic-ui-react";
 
 export default class Punct extends React.Component {
   constructor(props) {
@@ -8,7 +10,8 @@ export default class Punct extends React.Component {
       startDate: "2013-09-15",
       endDate: "2013-09-22",
       rosters: [],
-      shifts: []
+      shifts: [],
+      modalActive: false
     }
   }
 
@@ -56,12 +59,20 @@ export default class Punct extends React.Component {
     });
   }
 
+  changeDate(date, name) {
+    let obj = {};
+    obj[name] = date;
+    this.setState(obj)
+  }
+
 
   render() {
     var dayInfo = [];
-    for (var i = 0; i < this.state.rosters.length; i++) {
+    // Take the min of the two lengths, in case one is fetched before the other.
+    for (var i = 0; i < Math.min(this.state.rosters.length, this.state.shifts.length); i++) {
+      var date = this.state.rosters[i].date;
       dayInfo.push({
-        date: this.state.rosters[i].date,
+        date: moment(date).format("MMMM Do YYYY"),
         rosterStart: this.state.rosters[i].start,
         rosterFinish: this.state.rosters[i].finish,
         shiftStart: this.state.shifts[i].start,
@@ -69,19 +80,65 @@ export default class Punct extends React.Component {
       })
     }
     const tableRows = dayInfo.map((day) => (
-        <Table.Row>
+        <Table.Row key={day.date}>
           <Table.Cell>{day.date}</Table.Cell>
           <Table.Cell>{day.rosterStart}</Table.Cell>
-          <Table.Cell>{day.shiftStart}</Table.Cell>
+          <Table.Cell>
+            {day.shiftStart}
+            <Label pointing>{day.shiftStart}</Label>
+          </Table.Cell>
           <Table.Cell>{day.rosterFinish}</Table.Cell>
-          <Table.Cell>{day.shiftFinish}</Table.Cell>
+          <Table.Cell>
+            {typeof day.shiftFinish}
+            <Label pointing>{day.shiftFinish}</Label>
+          </Table.Cell>
         </Table.Row>
       )
     );
+    const modal = this.state.modalActive ? (
+      <Modal open={this.state.modalActive}>
+        <Modal.Header>Choose a start and end date for the pay period.</Modal.Header>
+        <DatePicker 
+          //value={this.state.startDate}
+          className="start-date"
+          name="startDate"
+          onChange={(date) => this.changeDate(date, "startDate")}
+        />
+        <DatePicker
+          value={this.state.endDate}
+          className="end-date"
+          name="endDate"
+          onChange={(date) => this.changeDate(date, "endDate")}
+        />
+      </Modal>
+    ) : <div/>;
+    
 
     return (
       <Segment>
         <Header image="mike.png" as="h1" content="Mike Wazowski, Scare Assistant" />
+        <Modal
+          trigger={(
+            <Button icon labelPosition="left" toggle={true} onClick={() => this.setState({modalActive: !this.state.modalActive})}>
+              <Icon name="caret down"/>
+              Choose pay period
+            </Button>
+          )}
+        >
+          <Modal.Header>Choose a start and end date for the pay period.</Modal.Header>
+          <DatePicker 
+            value={this.state.startDate}
+            className="start-date"
+            name="startDate"
+            onChange={(date) => this.changeDate(date, "startDate")}
+          />
+          <DatePicker
+            value={this.state.endDate}
+            className="end-date"
+            name="endDate"
+            onChange={(date) => this.changeDate(date, "endDate")}
+          />
+        </Modal>
         <Table striped={true}>
           <Table.Header>
             <Table.Row>
