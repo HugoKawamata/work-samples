@@ -1,7 +1,7 @@
 import * as React from "react";
 import DatePicker from "react-date-picker";
 import * as moment from 'moment';
-import { Segment, Input, Button, Header, Table, Modal, Icon, Label } from "semantic-ui-react";
+import { Segment, Input, Button, Header, Table, Modal, Icon, Popup, Label } from "semantic-ui-react";
 
 export default class Punct extends React.Component {
   constructor(props) {
@@ -67,52 +67,64 @@ export default class Punct extends React.Component {
 
 
   render() {
-    var dayInfo = [];
+    let dayInfo = [];
     // Take the min of the two lengths, in case one is fetched before the other.
-    for (var i = 0; i < Math.min(this.state.rosters.length, this.state.shifts.length); i++) {
-      var date = this.state.rosters[i].date;
+    for (let i = 0; i < Math.min(this.state.rosters.length, this.state.shifts.length); i++) {
+      const date = moment(this.state.rosters[i].date);
+      const rosterStartDate = moment(this.state.rosters[i].start);
+      const rosterFinishDate = moment(this.state.rosters[i].finish);
+      const shiftStartDate = moment(this.state.shifts[i].start);
+      const shiftFinishDate = moment(this.state.shifts[i].finish);
       dayInfo.push({
-        date: moment(date).format("MMMM Do YYYY"),
-        rosterStart: this.state.rosters[i].start,
-        rosterFinish: this.state.rosters[i].finish,
-        shiftStart: this.state.shifts[i].start,
-        shiftFinish: this.state.shifts[i].finish,
+        date: date,
+        rosterStart: rosterStartDate,
+        rosterFinish: rosterFinishDate,
+        shiftStart: shiftStartDate,
+        shiftFinish: shiftFinishDate
       })
     }
     const tableRows = dayInfo.map((day) => (
         <Table.Row key={day.date}>
-          <Table.Cell>{day.date}</Table.Cell>
-          <Table.Cell>{day.rosterStart}</Table.Cell>
+          <Table.Cell>{day.date.format("MMMM Do YYYY")}</Table.Cell>
+          <Table.Cell>{day.rosterStart.format("h:mma")}</Table.Cell>
+          <Popup content={day.shiftStart.format("h:mma")}
+            trigger={(
+              <Table.Cell>
+                {
+                  (day.shiftStart.diff(day.rosterStart)) <= 0 ?
+                  "on time" :
+                  (<div>
+                    started late
+                    <span className="badge red-badge">
+                      {moment.duration(day.shiftStart.diff(day.rosterStart)).humanize()}
+                    </span>
+                  </div>)
+                }
+              </Table.Cell>
+            )}
+          />
           <Table.Cell>
-            {day.shiftStart}
-            <Label pointing>{day.shiftStart}</Label>
+            {day.rosterFinish.format("h:mma")}
           </Table.Cell>
-          <Table.Cell>{day.rosterFinish}</Table.Cell>
-          <Table.Cell>
-            {typeof day.shiftFinish}
-            <Label pointing>{day.shiftFinish}</Label>
-          </Table.Cell>
+          <Popup content={day.shiftFinish.format("h:mma")}
+            trigger={
+              <Table.Cell>
+                {
+                  (day.rosterFinish.diff(day.shiftFinish)) <= 0 ?
+                  "on time" :
+                  (<div>
+                    left early
+                    <span className="badge red-badge">
+                      {moment.duration(day.rosterFinish.diff(day.shiftFinish)).humanize()}
+                    </span>
+                  </div>)
+                }
+              </Table.Cell>
+            }
+          />
         </Table.Row>
       )
     );
-    const modal = this.state.modalActive ? (
-      <Modal open={this.state.modalActive}>
-        <Modal.Header>Choose a start and end date for the pay period.</Modal.Header>
-        <DatePicker 
-          //value={this.state.startDate}
-          className="start-date"
-          name="startDate"
-          onChange={(date) => this.changeDate(date, "startDate")}
-        />
-        <DatePicker
-          value={this.state.endDate}
-          className="end-date"
-          name="endDate"
-          onChange={(date) => this.changeDate(date, "endDate")}
-        />
-      </Modal>
-    ) : <div/>;
-    
 
     return (
       <Segment>
