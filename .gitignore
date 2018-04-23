@@ -1,0 +1,30 @@
+# dependencies
+punctuality (frontend)/node_modules
+punctuality (frontend)/punctuality/node_modules
+
+# testing
+punctuality (frontend)/punctuality/coverage
+
+# production
+punctuality (frontend)/punctuality/build
+
+# misc
+punctuality (frontend)/punctuality/.DS_Store
+punctuality (frontend)/punctuality/.env.local
+punctuality (frontend)/punctuality/.env.development.local
+punctuality (frontend)/punctuality/.env.test.local
+punctuality (frontend)/punctuality/.env.production.local
+
+punctuality (frontend)/punctuality/npm-debug.log*
+punctuality (frontend)/punctuality/yarn-debug.log*
+punctuality (frontend)/punctuality/yarn-error.log*
+
+punctuality (frontend)/.DS_Store
+punctuality (frontend)/.env.local
+punctuality (frontend)/.env.development.local
+punctuality (frontend)/.env.test.local
+punctuality (frontend)/.env.production.local
+
+punctuality (frontend)/npm-debug.log*
+punctuality (frontend)/yarn-debug.log*
+punctuality (frontend)/yarn-error.log*
