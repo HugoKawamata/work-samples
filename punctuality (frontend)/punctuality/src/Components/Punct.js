@@ -161,7 +161,9 @@ export default class Punct extends React.Component {
               <Table.HeaderCell>Actual Finish</Table.HeaderCell>
             </Table.Row>
           </Table.Header>
-          {tableRows}
+          <Table.Body>
+            {tableRows}
+          </Table.Body>
         </Table>
 
         
