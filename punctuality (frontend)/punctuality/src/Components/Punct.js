@@ -14,9 +14,9 @@ export default class Punct extends React.Component {
 
   componentDidMount() {
     var self = this;
-    fetch("localhost:4567/rosters/" + startDate + "/" + endDate, 
+    fetch("http://localhost:4567/rosters/" + this.state.startDate + "/" + this.state.endDate, 
       {
-        method: "POST",
+        method: "GET",
         credentials: "same-origin"
       }
     ).then(function(response) {
@@ -31,12 +31,12 @@ export default class Punct extends React.Component {
           rosters: json
         });
         console.log("rosters")
-        console.log(rosters)
+        console.log(self.state.rosters)
       });
     });
-    fetch("localhost:4567/shifts/" + startDate + "/" + endDate, 
+    fetch("http://localhost:4567/shifts/" + this.state.startDate + "/" + this.state.endDate, 
       {
-        method: "POST",
+        method: "GET",
         credentials: "same-origin"
       }
     ).then(function(response) {
@@ -51,7 +51,7 @@ export default class Punct extends React.Component {
           shifts: json
         });
         console.log("shifts");
-        console.log(shifts);
+        console.log(self.state.shifts);
       });
     });
   }
