@@ -1,3 +1,8 @@
+$m-blue: #2154DD;
+$m-blue-light: #7695ea;
+$m-white: #e6e6e6;
+$transparent: rgba(0,0,0,0);
+
 .header {
   img {
     border-radius: 50%;
@@ -14,4 +19,85 @@
     background-color: red;
     color: white;
   }
+}
+
+.ui.container.datepickers-container {
+  display: flex;
+  justify-content: space-evenly;
+
+  .datepicker-container {
+    margin: 0 1em;
+
+  }
+}
+
+#navbar {
+  height: 100px;
+  background-color: $m-white;
+  color: $m-blue;
+  display: flex;
+  justify-content: space-between;
+
+  .nav-left {
+    display:flex;
+    .logo-image > img {
+      width: 80px;
+      margin: 10px;
+    }
+
+    .logo-title {
+      h1 {
+        font-family: "Montserrat", sans-serif;
+        font-size: 2em;
+        font-weight: 900;
+        margin: 0.5em 0 0.2em 0;
+      }
+      h3 {
+        font-family: "Montserrat", sans-serif;
+        font-size: 1.5em;
+        font-weight: 500;
+        margin: 0.3em 0 0.2em 0.1em;
+      }
+    }
+  }
+
+  .nav-right {
+    flex-grow: 1;
+    max-width: 600px;
+    margin-right: 3em;
+    .nav-ul {
+      margin: 0;
+      height: 100%;
+      list-style: none;
+      display: flex;
+      justify-content: space-around;
+      align-items: center;
+
+      li {
+        text-transform: uppercase;
+        font-family: "Montserrat", sans-serif;
+        display: flex;
+        padding: 1em 0;
+        border-bottom: 2px solid $transparent;
+
+        &:hover {
+          border-bottom: 2px solid $m-blue-light;
+          color: $m-blue-light;
+          cursor: pointer;
+        }
+
+        i {
+          margin-left: 0.3em;
+        }
+
+        &.active {
+          border-bottom: 2px solid $m-blue;
+        }
+      }
+    }
+  }
+}
+
+.profile {
+  margin-top: 2em;
 }

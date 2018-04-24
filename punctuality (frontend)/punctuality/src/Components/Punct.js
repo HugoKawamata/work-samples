@@ -1,14 +1,15 @@
 import * as React from "react";
-import DatePicker from "react-date-picker";
 import * as moment from 'moment';
-import { Segment, Input, Button, Header, Table, Modal, Icon, Popup, Label } from "semantic-ui-react";
+import DatePicker from "react-datepicker";
+
+import { Container, Input, Button, Header, Table, Modal, Icon, Popup, Label } from "semantic-ui-react";
 
 export default class Punct extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
-      startDate: "2013-09-15",
-      endDate: "2013-09-22",
+      startDate: moment("2013-09-15"),
+      endDate: moment("2013-09-22"),
       rosters: [],
       shifts: [],
       modalActive: false
@@ -16,8 +17,12 @@ export default class Punct extends React.Component {
   }
 
   componentDidMount() {
+    this.getNewRosters(this.state.startDate, this.state.endDate);
+  }
+
+  getNewRosters = (start, end) => {
     var self = this;
-    fetch("http://localhost:4567/rosters/" + this.state.startDate + "/" + this.state.endDate, 
+    fetch("http://localhost:4567/rosters/" + start.format("YYYY-MM-DD") + "/" + end.format("YYYY-MM-DD"), 
       {
         method: "GET",
         credentials: "same-origin"
@@ -37,7 +42,7 @@ export default class Punct extends React.Component {
         console.log(self.state.rosters);
       });
     });
-    fetch("http://localhost:4567/shifts/" + this.state.startDate + "/" + this.state.endDate, 
+    fetch("http://localhost:4567/shifts/" + start.format("YYYY-MM-DD") + "/" + end.format("YYYY-MM-DD"), 
       {
         method: "GET",
         credentials: "same-origin"
@@ -62,7 +67,12 @@ export default class Punct extends React.Component {
   changeDate(date, name) {
     let obj = {};
     obj[name] = date;
-    this.setState(obj)
+    this.setState(obj);
+    if (name == "startDate") {
+      this.getNewRosters(date, this.state.endDate);
+    } else if (name == "endDate") {
+      this.getNewRosters(this.state.startDate, date);
+    }
   }
 
 
@@ -127,7 +137,7 @@ export default class Punct extends React.Component {
     );
 
     return (
-      <Segment>
+      <Container className="profile">
         <Header image="mike.png" as="h1" content="Mike Wazowski, Scare Assistant" />
         <Modal
           trigger={(
@@ -136,20 +146,33 @@ export default class Punct extends React.Component {
               Choose pay period
             </Button>
           )}
+          closeIcon
         >
           <Modal.Header>Choose a start and end date for the pay period.</Modal.Header>
-          <DatePicker 
-            value={this.state.startDate}
-            className="start-date"
-            name="startDate"
-            onChange={(date) => this.changeDate(date, "startDate")}
-          />
-          <DatePicker
-            value={this.state.endDate}
-            className="end-date"
-            name="endDate"
-            onChange={(date) => this.changeDate(date, "endDate")}
-          />
+          <Modal.Content>
+            <Container className="datepickers-container">
+              <div className="datepicker-container">
+                <h5>Starting date:</h5>
+                <div className="ui input">
+                  <DatePicker 
+                    selected={moment(this.state.startDate)}
+                    className="start-date"
+                    onChange={(date) => this.changeDate(date, "startDate")}
+                  />
+                </div>
+              </div>
+              <div className="datepicker-container">
+                <h5>Ending date:</h5>
+                <div className="ui input">
+                  <DatePicker
+                    selected={moment(this.state.endDate)}
+                    className="end-date"
+                    onChange={(date) => this.changeDate(date, "endDate")}
+                  />
+                </div>
+              </div>
+            </Container>
+          </Modal.Content>
         </Modal>
         <Table striped={true}>
           <Table.Header>
@@ -167,7 +190,7 @@ export default class Punct extends React.Component {
         </Table>
 
         
-      </Segment>
+      </Container>
     )
   }
 }
