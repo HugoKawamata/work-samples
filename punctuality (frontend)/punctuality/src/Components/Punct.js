@@ -78,20 +78,32 @@ export default class Punct extends React.Component {
 
   render() {
     let dayInfo = [];
+    let rostersOffset = 0;
+    let shiftsOffset = 0;
     // Take the min of the two lengths, in case one is fetched before the other.
-    for (let i = 0; i < Math.min(this.state.rosters.length, this.state.shifts.length); i++) {
-      const date = moment(this.state.rosters[i].date);
-      const rosterStartDate = moment(this.state.rosters[i].start);
-      const rosterFinishDate = moment(this.state.rosters[i].finish);
-      const shiftStartDate = moment(this.state.shifts[i].start);
-      const shiftFinishDate = moment(this.state.shifts[i].finish);
-      dayInfo.push({
-        date: date,
-        rosterStart: rosterStartDate,
-        rosterFinish: rosterFinishDate,
-        shiftStart: shiftStartDate,
-        shiftFinish: shiftFinishDate
-      })
+    for (let i = 0; Math.max(i+rostersOffset, i+shiftsOffset) < Math.min(this.state.rosters.length, this.state.shifts.length); i++) {
+      let rosterDate = moment(this.state.rosters[i + rostersOffset].date);
+      let shiftDate = moment(this.state.shifts[i + shiftsOffset].date);
+      // If there is no shift record for a particular roster, ignore unassociated shift
+      if (rosterDate.diff(shiftDate, "days") > 0) {
+        shiftsOffset += 1;
+      // If there is no roster for a particular shift (should not occur), ignore unassociated roster
+      } else if (rosterDate.diff(shiftDate, "days") < 0) {
+        rostersOffset += 1;
+      } else {
+        const date = moment(this.state.rosters[i + rostersOffset].date);
+        const rosterStartDate = moment(this.state.rosters[i + rostersOffset].start);
+        const rosterFinishDate = moment(this.state.rosters[i + rostersOffset].finish);
+        const shiftStartDate = moment(this.state.shifts[i + shiftsOffset].start);
+        const shiftFinishDate = moment(this.state.shifts[i + shiftsOffset].finish);
+        dayInfo.push({
+          date: date,
+          rosterStart: rosterStartDate,
+          rosterFinish: rosterFinishDate,
+          shiftStart: shiftStartDate,
+          shiftFinish: shiftFinishDate
+        })
+      }
     }
     const tableRows = dayInfo.map((day) => (
         <Table.Row key={day.date}>
@@ -105,6 +117,7 @@ export default class Punct extends React.Component {
                   "on time" :
                   (<div>
                     started late
+                    {day.shiftStart.format("MMMM Do YYYY")}
                     <span className="badge red-badge">
                       {moment.duration(day.shiftStart.diff(day.rosterStart)).humanize()}
                     </span>
@@ -123,7 +136,7 @@ export default class Punct extends React.Component {
                   (day.rosterFinish.diff(day.shiftFinish)) <= 0 ?
                   "on time" :
                   (<div>
-                    left early
+                    {!day.shiftFinish.isValid() ? "not clocked" : "left early"}
                     <span className="badge red-badge">
                       {moment.duration(day.rosterFinish.diff(day.shiftFinish)).humanize()}
                     </span>
