@@ -4,6 +4,12 @@ $m-blue-dark:#2d3e6f;
 $m-white: #e6e6e6;
 $transparent: rgba(0,0,0,0);
 
+#main {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+
 .header {
   img {
     border-radius: 50%;
@@ -101,5 +107,34 @@ $transparent: rgba(0,0,0,0);
 }
 
 .profile {
-  margin-top: 2em;
+  margin: 2em 0 4em 0;
+  flex-grow: 1;
+}
+
+#footer {
+  height: 50px;
+  width: 100%;
+  background-color: $m-blue-dark;
+  color: $m-white;
+  display: flex;
+  justify-content: center;
+  line-height: 50px;
+
+  .copyright {
+    font-family: "Montserrat", sans-serif;
+  }
+
+  .links {
+    margin-left: 4%;
+    float: right;
+
+    a {
+      color: $m-white;
+      transition: color 200ms;
+
+      &:hover {
+        color: $m-blue-light;
+      }
+    }
+  }
 }

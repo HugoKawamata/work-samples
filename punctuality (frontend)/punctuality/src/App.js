@@ -3,6 +3,7 @@ import { Route } from 'react-router-dom';
 import logo from './logo.svg';
 import Punct from "./Components/Punct";
 import Navbar from "./Components/Navbar";
+import Footer from "./Components/Footer";
 import './App.css';
 
 class App extends Component {
@@ -11,6 +12,7 @@ class App extends Component {
       <div id="main">
         <Route path="/" component={Navbar} />
         <Route path="/" component={Punct} />
+        <Route path="/" component={Footer} />
       </div>
     );
   }
