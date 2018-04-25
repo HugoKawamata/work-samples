@@ -2,7 +2,7 @@ import * as React from "react";
 import * as moment from 'moment';
 import DatePicker from "react-datepicker";
 
-import { Container, Input, Button, Header, Table, Modal, Icon, Popup, Label } from "semantic-ui-react";
+import { Container, Button, Header, Table, Modal, Icon, Popup } from "semantic-ui-react";
 
 export default class Punct extends React.Component {
   constructor(props) {
@@ -17,11 +17,17 @@ export default class Punct extends React.Component {
   }
 
   componentDidMount() {
+    // Get the roster and shift info when the page loads
     this.getNewRosters(this.state.startDate, this.state.endDate);
   }
 
+  /*
+    A function which takes a start and end date and fetches the roster and shift information
+    for that time period, and then sets these to the state's startDate and endDate attributes.
+  */
   getNewRosters = (start, end) => {
     var self = this;
+    // AJAX request rosters information
     fetch("http://localhost:4567/rosters/" + start.format("YYYY-MM-DD") + "/" + end.format("YYYY-MM-DD"), 
       {
         method: "GET",
@@ -35,13 +41,14 @@ export default class Punct extends React.Component {
       }
 
       response.json().then(function(json) {
+        // Set state with the json we got
         self.setState({
           rosters: json
         });
-        console.log("rosters");
-        console.log(self.state.rosters);
       });
     });
+
+    // AJAX request shift information
     fetch("http://localhost:4567/shifts/" + start.format("YYYY-MM-DD") + "/" + end.format("YYYY-MM-DD"), 
       {
         method: "GET",
@@ -55,22 +62,26 @@ export default class Punct extends React.Component {
       }
 
       response.json().then(function(json) {
+        // Set state with the json we got
         self.setState({
           shifts: json
         });
-        console.log("shifts");
-        console.log(self.state.shifts);
       });
     });
   }
 
+  /*
+    Whenever we change the date, we should also get a new set of roster and
+    shift information. This function is called when the DatePicker objects
+    are used.
+  */
   changeDate(date, name) {
     let obj = {};
     obj[name] = date;
     this.setState(obj);
-    if (name == "startDate") {
+    if (name === "startDate") {
       this.getNewRosters(date, this.state.endDate);
-    } else if (name == "endDate") {
+    } else if (name === "endDate") {
       this.getNewRosters(this.state.startDate, date);
     }
   }
@@ -87,22 +98,23 @@ export default class Punct extends React.Component {
     let dayInfo = this.generateDayInfo();
 
     let latexFile = "";
-    latexFile += "\
-\\documentclass{article}\n\
-\\title{\\bf Shift Paperwork " + 
-  this.state.startDate.format("DD/MM/YYYY") + " - " + 
-  this.state.endDate.format("DD/MM/YYYY") + "}\n\
-\\author{Mike Wazowski, EMP20073}\n\
-\\begin{document}\n\
-\\maketitle\n\
-\\begin{center}\n\
-\\centerline{\n\
-\\begin{tabular}{| c | c | c | c | c |}\n\
-\\hline\n\
-Date & Rostered Start & Actual Start & Rostered Finish & Actual Finish\\\\\n\
-\\hline\n\
-    ";
+    // Set up the document and header row of the table
+    latexFile +=
+      "\\documentclass{article}\n" +
+      "\\title{\\bf Shift Paperwork " + 
+      this.state.startDate.format("DD/MM/YYYY") + " - " + 
+      this.state.endDate.format("DD/MM/YYYY") + "}\n" +
+      "\\author{Mike Wazowski, EMP20073}\n" +
+      "\\begin{document}\n" +
+      "\\maketitle\n" +
+      "\\begin{center}\n" +
+      "\\centerline{\n" +
+      "\\begin{tabular}{| c | c | c | c | c |}\n" +
+      "\\hline\n" +
+      "Date & Rostered Start & Actual Start & Rostered Finish & Actual Finish\\\\\n" +
+      "\\hline\n";
 
+    // Print each row of the table to the file.
     for (let i = 0; i < dayInfo.length; i++) {
       latexFile += dayInfo[i].date.format("MMMM Do YYYY") + " & ";
       latexFile += dayInfo[i].rosterStart.format("h:mma") + " & ";
@@ -112,17 +124,18 @@ Date & Rostered Start & Actual Start & Rostered Finish & Actual Finish\\\\\n\
       latexFile += "\\hline\n";
     }
 
-    latexFile += "\\end{tabular}\n\
-}\
-\\end{center}\n\
-\\vspace{3cm}\n\
-Signed: \\hrulefill\n\n\
-\\hspace*{0mm}\\phantom{Signed: }Mike Wazowski\n\n\
-\\hspace*{0mm}\\phantom{Signed: }Scare Assistant to James P. Sullivan\n\n\
-\\end{document}\
-    ";
+    // Close table and add a signature line, then close document
+    latexFile += "\\end{tabular}\n" +
+      "}" +
+      "\\end{center}\n" +
+      "\\vspace{3cm}\n" +
+      "Signed: \\hrulefill\n\n" +
+      "\\hspace*{0mm}\\phantom{Signed: }Mike Wazowski\n\n" +
+      "\\hspace*{0mm}\\phantom{Signed: }Scare Assistant to James P. Sullivan\n\n" +
+      "\\end{document}";
 
     // Hacky way of implementing client side file download.
+    // Creates a hidden element that downloads the file onClick, then clicks it and removes it.
     let download = document.createElement('a');
     download.setAttribute('href', 'data:text/plain;charset=utf-8,' + encodeURIComponent(latexFile));
     download.setAttribute('download', "paperwork_" + this.state.startDate.format("DD-MM-YY") + "_" + this.state.endDate.format("DD-MM-YY") + ".tex");
@@ -132,20 +145,35 @@ Signed: \\hrulefill\n\n\
     document.body.removeChild(download);
   }
 
-  /* Generates an array of objects consisting of dates and the associated shift and roster times for that date. */
+  /* 
+    Generates an array of objects consisting of dates and the associated shift and roster times for that date.
+  */
   generateDayInfo = () => {
     let dayInfo = [];
+
+    // These offsets will be used in the case of entire shift records being missed/rosters not being completed.
+    // When a shift is missing, instead of getting the correct shift, we get the next shift that was completed.
+    // So, our "roster index" is one behind. In this case, we want to add one to rostersOffset so that it can
+    // "catch up".
     let rostersOffset = 0;
     let shiftsOffset = 0;
+
     // Take the min of the two lengths, in case one is fetched before the other.
-    for (let i = 0; Math.max(i+rostersOffset, i+shiftsOffset) < Math.min(this.state.rosters.length, this.state.shifts.length); i++) {
+    for (let i = 0;
+        // The biggest index should not be bigger than the smallest array
+        Math.max(i+rostersOffset, i+shiftsOffset) < 
+        Math.min(this.state.rosters.length, this.state.shifts.length);
+        i++) {
+
+      // Initialise all these boys
       let rosterDate = moment(this.state.rosters[i + rostersOffset].date);
       let shiftDate = moment(this.state.shifts[i + shiftsOffset].date);
       let rosterStartDate;
       let rosterFinishDate;
       let shiftStartDate;
       let shiftFinishDate;
-      // If there is no roster for a particular shift (should not occur), ignore unassociated roster
+
+      // If there is no roster for a particular shift (should not occur), deal with it, then add one to shiftsOffset
       if (rosterDate.diff(shiftDate, "days") > 0) {
         rosterStartDate = moment("-");
         rosterFinishDate = moment("-");
@@ -153,7 +181,8 @@ Signed: \\hrulefill\n\n\
         shiftFinishDate = moment(this.state.shifts[i + shiftsOffset].finish);
 
         shiftsOffset += 1;
-      // If there is no shift record for a particular roster, ignore unassociated shift
+
+      // If there is no shift record for a particular roster, deal with it, then add one to rostersOffset
       } else if (rosterDate.diff(shiftDate, "days") < 0) {
         rosterStartDate = moment(this.state.rosters[i + rostersOffset].start);
         rosterFinishDate = moment(this.state.rosters[i + rostersOffset].finish);
@@ -161,12 +190,15 @@ Signed: \\hrulefill\n\n\
         shiftFinishDate = moment("-");
 
         rostersOffset += 1;
+
+      // Everything went ok! Get the dates normally.
       } else {
         rosterStartDate = moment(this.state.rosters[i + rostersOffset].start);
         rosterFinishDate = moment(this.state.rosters[i + rostersOffset].finish);
         shiftStartDate = moment(this.state.shifts[i + shiftsOffset].start);
         shiftFinishDate = moment(this.state.shifts[i + shiftsOffset].finish);
       }
+      // Add the info we got to the table, no matter what it was (empty shift or good shift)
       dayInfo.push({
         date: rosterDate,
         rosterStart: rosterStartDate,
@@ -180,18 +212,24 @@ Signed: \\hrulefill\n\n\
   }
 
   render() {
+    // dayInfo is the array of objects (table rows, basically)
     let dayInfo = this.generateDayInfo();
 
+    // Generate an actual array of table rows from the table row information
     const tableRows = dayInfo.map((day) => (
         <Table.Row key={day.date}>
           <Table.Cell>{day.date.format("MMMM Do YYYY")}</Table.Cell>
           <Table.Cell>{day.rosterStart.format("h:mma")}</Table.Cell>
+          {/* On hover, show actual time */}
           <Popup content={day.shiftStart.format("h:mma")}
             trigger={(
               <Table.Cell>
                 {
+                  // If Mike started before the roster, print "on time"
                   (day.shiftStart.diff(day.rosterStart)) <= 0 ?
                   "on time" :
+                  // Otherwise, print an appropriate message with a red badge
+                  // showing a late he was.
                   (<div>
                     {!day.shiftStart.isValid() ? "not clocked" : "started late"}
                     <span className="badge red-badge">
@@ -209,6 +247,7 @@ Signed: \\hrulefill\n\n\
           <Table.Cell>
             {day.rosterFinish.format("h:mma")}
           </Table.Cell>
+          {/* On hover, show actual time */}
           <Popup content={day.shiftFinish.format("h:mma")}
             trigger={
               <Table.Cell>
@@ -236,6 +275,7 @@ Signed: \\hrulefill\n\n\
     return (
       <Container className="profile">
         <Header image="mike.png" as="h1" content="Mike Wazowski, Scare Assistant" />
+
         <Modal
           trigger={(
             <Button icon labelPosition="left" toggle={true} onClick={() => this.setState({modalActive: !this.state.modalActive})}>
@@ -271,11 +311,13 @@ Signed: \\hrulefill\n\n\
             </Container>
           </Modal.Content>
         </Modal>
+
         <Button
           className="paperwork-button"
           onClick={this.filePaperwork}>
             Download paperwork (LaTeX)
         </Button>
+
         <Table striped={true}>
           <Table.Header>
             <Table.Row>
@@ -287,6 +329,7 @@ Signed: \\hrulefill\n\n\
             </Table.Row>
           </Table.Header>
           <Table.Body>
+            {/* The generated table rows go here */}
             {tableRows}
           </Table.Body>
         </Table>

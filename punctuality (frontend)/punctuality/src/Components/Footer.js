@@ -1,11 +1,7 @@
 import * as React from "react";
-import { Container, Button, Icon } from "semantic-ui-react";
+import { Icon } from "semantic-ui-react";
 
 export default class Footer extends React.Component {
-  constructor() {
-    super();
-  }
-
   render() {
     return (
       <div id="footer">
