@@ -3,7 +3,6 @@ import { Route } from 'react-router-dom';
 import Punct from "./Components/Punct";
 import Navbar from "./Components/Navbar";
 import Footer from "./Components/Footer";
-import './App.css';
 
 class App extends Component {
   render() {
