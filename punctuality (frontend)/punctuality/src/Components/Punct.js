@@ -118,9 +118,13 @@ export default class Punct extends React.Component {
     for (let i = 0; i < dayInfo.length; i++) {
       latexFile += dayInfo[i].date.format("MMMM Do YYYY") + " & ";
       latexFile += dayInfo[i].rosterStart.format("h:mma") + " & ";
-      latexFile += dayInfo[i].shiftStart.format("h:mma") + " & ";
+      latexFile += dayInfo[i].shiftStart.isValid() ?
+          dayInfo[i].shiftStart.format("h:mma") + " & " : 
+          "No Record &";
       latexFile += dayInfo[i].rosterFinish.format("h:mma") + " & ";
-      latexFile += dayInfo[i].shiftFinish.format("h:mma") + " \\\\\n";
+      latexFile += dayInfo[i].shiftFinish.isValid() ?
+          dayInfo[i].shiftFinish.format("h:mma") + " \\\\\n" :
+          "No Record \\\\\n";
       latexFile += "\\hline\n";
     }
 
@@ -277,13 +281,13 @@ export default class Punct extends React.Component {
         <Header image="mike.png" as="h1" content="Mike Wazowski, Scare Assistant" />
 
         <Modal
+          open={this.state.modalActive}
           trigger={(
             <Button icon labelPosition="left" toggle={true} onClick={() => this.setState({modalActive: !this.state.modalActive})}>
               <Icon name="caret down"/>
               Choose pay period
             </Button>
           )}
-          closeIcon
         >
           <Modal.Header>Choose a start and end date for the pay period.</Modal.Header>
           <Modal.Content>
@@ -310,6 +314,11 @@ export default class Punct extends React.Component {
               </div>
             </Container>
           </Modal.Content>
+          <Modal.Actions>
+            <Button color='green' onClick={() => this.setState({modalActive: !this.state.modalActive})} inverted>
+              <Icon name='checkmark' /> Done
+            </Button>
+          </Modal.Actions>
         </Modal>
 
         <Button
